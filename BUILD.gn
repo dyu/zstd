@@ -12,25 +12,30 @@ config("zstd_config") {
 }
 
 static_library("zstd") {
-  cflags = [
-    "-Wall",
-    "-Wextra",
-    "-Wcast-qual",
-    "-Wcast-align",
-    "-Wshadow",
-    "-Wstrict-aliasing=1",
-    "-Wswitch-enum",
-    "-Wdeclaration-after-statement",
-    "-Wstrict-prototypes",
-    "-Wundef",
-    "-Wpointer-arith",
-  ]
+  if (is_win) {
+    cflags = [ "-Wall" ]
+  } else {
+    cflags = [
+      "-Wall",
+      "-Wextra",
+      "-Wcast-qual",
+      "-Wcast-align",
+      "-Wshadow",
+      "-Wstrict-aliasing=1",
+      "-Wswitch-enum",
+      "-Wdeclaration-after-statement",
+      "-Wstrict-prototypes",
+      "-Wundef",
+      "-Wpointer-arith",
+    ]
+  }
   
   sources = [
+    # api
     "lib/zdict.h",
     "lib/zstd.h",
     "lib/zstd_errors.h",
-    # common
+    # headers
     "lib/common/bistream.h",
     "lib/common/compiler.h",
     "lib/common/cpu.h",
@@ -41,7 +46,7 @@ static_library("zstd") {
     "lib/common/zstd_deps.h",
     "lib/common/zstd_internal.h",
     "lib/common/zstd_trace.h",
-    
+    # common
     "lib/common/debug.c",
     "lib/common/debug.h",
     "lib/common/entropy_common.c",
@@ -55,7 +60,7 @@ static_library("zstd") {
     "lib/common/xxhash.c",
     "lib/common/xxhash.h",
     "lib/common/zstd_common.c",
-    #dictBuilder
+    # dictBuilder
     "lib/dictBuilder/cover.c",
     "lib/dictBuilder/cover.h",
     "lib/dictBuilder/divsufsort.c",
@@ -88,7 +93,6 @@ static_library("zstd") {
     "lib/compress/zstd_opt.c",
     # decompress
     "lib/decompress/huf_decompress.c",
-    "lib/decompress/huf_decompress_amd64.S",
     "lib/decompress/zstd_ddict.c",
     "lib/decompress/zstd_ddict.h",
     "lib/decompress/zstd_decompress.c",
@@ -96,6 +100,9 @@ static_library("zstd") {
     "lib/decompress/zstd_decompress_block.h",
     "lib/decompress/zstd_decompress_internal.h",
   ]
+  if (!is_win || is_clang) {
+    sources += [ "lib/decompress/huf_decompress_amd64.S" ]
+  }
   
   public_configs = [ ":zstd_config" ]
 }
